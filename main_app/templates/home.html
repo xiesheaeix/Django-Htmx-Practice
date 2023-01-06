@@ -1,4 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2>Welcome</h2>
+
+<div hx-ext="client-side-templates">
+    <!-- hx-trigger="load, click" makes sure that api gets called on page load AND on click  !-->
+    <button
+       type="button"
+       hx-trigger="click"
+       hx-get="https://cat-fact.herokuapp.com/facts"
+       hx-target="#list"
+       hx-swap="innerHTML"
+    >Reload</button>
+    <ul id="list">
+        {% for item in list %}
+        {item.parsed.text}
+        {% endfor %}
+    </ul>
+  </div>
 {% endblock %}

@@ -12,7 +12,8 @@ urlpatterns = [
 
 DjangoPractice_urlpatterns = [
     path('check_username/', views.check_username, name='check-username'),
-    path('add-todo/', views.add_todo, name='add-todo')
+    path('add-todo/', views.add_todo, name='add-todo'),
+     path('delete-todo/<int:pk>/', views.delete_todo, name='delete-todo')
 ]
 
 urlpatterns += DjangoPractice_urlpatterns

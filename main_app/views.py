@@ -53,3 +53,9 @@ def add_todo(request):
     # return template w/ all the users todos
     todos = request.user.todos.all()
     return render(request, 'partials/todo-list.html', {'todos': todos})
+
+def delete_todo(request, pk):
+    # remove film from users list
+    request.user.todos.remove(pk)
+    todos = request.user.todos.all()
+    return render(request, 'partials/todo-list.html', {'todos': todos})

@@ -1,7 +1,15 @@
+
 {% if todos %}
-    <ul>
+    <ul class="list-group col-12">
     {% for todo in todos %}
-        <li>{{ todo.description }}</li>
+        <li class="list-group-item d-flex justify-content-between align-center">
+            {{ todo.description }} 
+            <span class="badge text-bg-danger"
+                style="cursor: pointer;"
+                hx-delete="{% url 'delete-todo' todo.pk %}"
+                hx-target="#todo-list"
+                hx-confirm="Are you sure you want to delete?">X</span>
+        </li>
     {% endfor %}
     </ul>
 {% else %}
