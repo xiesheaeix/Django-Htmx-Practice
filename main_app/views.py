@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from main_app.models import ToDo
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.http import require_http_methods
+from django.contrib import messages
 
 from main_app.forms import Signup
 
@@ -45,17 +47,37 @@ def check_username(request):
 @login_required
 def add_todo(request):
     description = request.POST.get('todo-description')
-    todo = ToDo.objects.create(description=description)
+    todo = ToDo.objects.get_or_create(description=description)[0]
 
     # add todo to the user's list
     request.user.todos.add(todo)
 
     # return template w/ all the users todos
     todos = request.user.todos.all()
+    messages.success(request, f"Added {description} to list of films")
     return render(request, 'partials/todo-list.html', {'todos': todos})
 
+@login_required
+@require_http_methods(['DELETE'])
 def delete_todo(request, pk):
     # remove film from users list
     request.user.todos.remove(pk)
     todos = request.user.todos.all()
     return render(request, 'partials/todo-list.html', {'todos': todos})
+
+@login_required
+def search_todo(request):
+    search_text = request.POST.get('search')
+    results = ToDo.objects.filter(description__icontains=search_text)
+
+    #ToDo: figure out why todos are saving as all users, once more user centric you can add this 
+    # user_todos = request.user.todos.all()
+    # results = ToDo.objects.filter(description__icontains=search_text).exclude(
+    #     description__in=user_todos.value_list('description', flat=True)
+    # )
+
+    context = {'results': results}
+    return render(request, 'partials/search-results.html', context)
+
+def clear(request):
+    return HttpResponse("")
