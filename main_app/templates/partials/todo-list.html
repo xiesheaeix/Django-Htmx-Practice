@@ -1,0 +1,9 @@
+{% if todos %}
+    <ul>
+    {% for todo in todos %}
+        <li>{{ todo.description }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>You do not have any todos in your list</p>
+{% endif %}

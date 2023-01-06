@@ -2,8 +2,11 @@ from django.http.response import HttpResponse, HttpResponsePermanentRedirect
 from django.shortcuts import render
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, ListView
 from django.contrib.auth import get_user_model
+from main_app.models import ToDo
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from main_app.forms import Signup
 
@@ -22,9 +25,31 @@ class SignupView(FormView):
         form.save()  # save the user
         return super().form_valid(form)
 
+class TodoList(LoginRequiredMixin, ListView):
+    template_name = 'todos.html'
+    model = ToDo
+    context_object_name = 'todos'
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.todos.all()
+
+
 def check_username(request):
     username = request.POST.get('username')
     if get_user_model().objects.filter(username=username).exists():
-        return HttpResponse("<div style='color: red;'>This username already exists</div>")
+        return HttpResponse("<div id='username-error' class='error'>This username already exists</div>")
     else:
-        return HttpResponse("<div style='color: green;'>This username is available</div>")
+        return HttpResponse("<div id='username-error' class='success'>This username is available</div>")
+
+@login_required
+def add_todo(request):
+    description = request.POST.get('todo-description')
+    todo = ToDo.objects.create(description=description)
+
+    # add todo to the user's list
+    request.user.todos.add(todo)
+
+    # return template w/ all the users todos
+    todos = request.user.todos.all()
+    return render(request, 'partials/todo-list.html', {'todos': todos})
