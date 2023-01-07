@@ -1,5 +1,5 @@
 from django.http.response import HttpResponse, HttpResponsePermanentRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.views.generic import FormView, ListView
@@ -67,7 +67,6 @@ def add_todo(request):
 def delete_todo(request, pk):
     # remove film from users list
     UserTodos.objects.get(pk=pk).delete()
-
     reorder(request.user)
     todos = UserTodos.objects.filter(user=request.user)
     return render(request, 'partials/todo-list.html', {'todos': todos})
@@ -99,3 +98,23 @@ def sort(request):
         todos.append(usertodo)
 
     return render(request, 'partials/todo-list.html', {'todos': todos})
+
+@login_required
+def detail(request, pk):
+    usertodo = get_object_or_404(UserTodos, pk=pk)
+    context = {'usertodo': usertodo}
+    return render(request, 'partials/todo-detail.html', context)
+
+@login_required
+def todo_partials(request):
+    todos = UserTodos.objects.filter(user=request.user)
+    return render(request, 'partials/todo-list.html', {'todos': todos})
+
+
+@login_required
+def upload_photo(request, pk):
+    usertodo = get_object_or_404(UserTodos, pk=pk)
+    photo = request.FILES.get('photo')
+    usertodo.todo.photo.save(photo.name, photo)
+    context = {'usertodo': usertodo}
+    return render(request, 'partials/todo-detail.html', context)

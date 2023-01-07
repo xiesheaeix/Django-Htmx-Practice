@@ -1,6 +1,15 @@
+<div class="d-flex justify-content-between align-items-center">
+    <p class="lead ml-0">My To Do Items</p>
+    <form class="d-flex align-items-center">
+        {% csrf_token %}
+        <input type="text" name="todo-description" class="form-control-sm mr-2" placeholder="Enter a To Do Item" />
+        <button hx-post="{% url 'add-todo' %}" hx-target='#todo-list' type="submit" class="btn btn-success btn-sm">Add To Do</button>
+    </form>
+</div>
+<hr/>
 
 <div class="d-flex justify-content-between">
-
+    
     <section class="col-6">
         {% if messages %}
         <ul class="messages" hx-get="{% url 'clear' %}" hx-trigger="load delay:3s">
@@ -24,13 +33,15 @@
                 {% for todo in todos %}
                 <div>
                     <input type="hidden" name="todo_order" value="{{ todo.pk }}"/>
+                    <a hx-get="{% url 'detail' todo.pk %}" hx-target="#todo-list">
                     <li class="list-group-item d-flex justify-content-between align-center">
                         #{{ todo.order }} {{ todo.todo.description }} 
+                    </a>
                         <span class="badge text-bg-danger"
-                            style="cursor: pointer;"
-                            hx-delete="{% url 'delete-todo' todo.pk %}"
-                            hx-target="#todo-list"
-                            hx-confirm="Are you sure you want to delete?">X</span>
+                        style="cursor: pointer;"
+                        hx-delete="{% url 'delete-todo' todo.pk %}"
+                        hx-target="#todo-list"
+                        hx-confirm="Are you sure you want to delete?">X</span>
                     </li>
                 </div>
                 {% endfor %}

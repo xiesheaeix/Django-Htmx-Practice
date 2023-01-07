@@ -8,7 +8,8 @@ class User(AbstractUser):
 class ToDo(models.Model):
     description = models.CharField(max_length=128, unique=True)
     users = models.ManyToManyField(User, related_name='todos', through='UserTodos') #user.todos.all() to get all users 
-    
+    photo = models.ImageField(upload_to='todo_photos/', null=True, blank=True)
+
     class Meta: ordering =[Lower('description')]
 
 class UserTodos(models.Model):
