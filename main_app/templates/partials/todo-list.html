@@ -19,18 +19,22 @@
             {% endif %}
 
         {% if todos %}
-            <ul class="list-group col-12">
-            {% for todo in todos %}
-                <li class="list-group-item d-flex justify-content-between align-center">
-                    {{ todo.description }} 
-                    <span class="badge text-bg-danger"
-                        style="cursor: pointer;"
-                        hx-delete="{% url 'delete-todo' todo.pk %}"
-                        hx-target="#todo-list"
-                        hx-confirm="Are you sure you want to delete?">X</span>
-                </li>
-            {% endfor %}
-            </ul>
+            <form class="sortable list-group col-12" hx-trigger="end" hx-post="{% url 'sort' %}" hx-target="#todo-list">
+                <div class="htmx-indicator">Updating...</div>
+                {% for todo in todos %}
+                <div>
+                    <input type="hidden" name="todo_order" value="{{ todo.pk }}"/>
+                    <li class="list-group-item d-flex justify-content-between align-center">
+                        #{{ todo.order }} {{ todo.todo.description }} 
+                        <span class="badge text-bg-danger"
+                            style="cursor: pointer;"
+                            hx-delete="{% url 'delete-todo' todo.pk %}"
+                            hx-target="#todo-list"
+                            hx-confirm="Are you sure you want to delete?">X</span>
+                    </li>
+                </div>
+                {% endfor %}
+            </form>
         {% else %}
             <p>You do not have any To Do's in your list</p>
         {% endif %}

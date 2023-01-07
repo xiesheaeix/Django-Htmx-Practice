@@ -4,12 +4,13 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.views.generic import FormView, ListView
 from django.contrib.auth import get_user_model
-from main_app.models import ToDo
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 
+from main_app.models import ToDo, UserTodos
+from main_app.utils import get_max_order, reorder
 from main_app.forms import Signup
 
 def home(request):
@@ -33,8 +34,7 @@ class TodoList(LoginRequiredMixin, ListView):
     context_object_name = 'todos'
 
     def get_queryset(self):
-        user = self.request.user
-        return user.todos.all()
+      return UserTodos.objects.filter(user=self.request.user)
 
 
 def check_username(request):
@@ -50,10 +50,15 @@ def add_todo(request):
     todo = ToDo.objects.get_or_create(description=description)[0]
 
     # add todo to the user's list
-    request.user.todos.add(todo)
+    if not UserTodos.objects.filter(todo=todo, user=request.user).exists():
+        UserTodos.objects.create(
+            todo=todo, 
+            user=request.user, 
+            order=get_max_order(request.user)
+        )
 
     # return template w/ all the users todos
-    todos = request.user.todos.all()
+    todos = UserTodos.objects.filter(user=request.user)
     messages.success(request, f"Added {description} to list of films")
     return render(request, 'partials/todo-list.html', {'todos': todos})
 
@@ -61,8 +66,10 @@ def add_todo(request):
 @require_http_methods(['DELETE'])
 def delete_todo(request, pk):
     # remove film from users list
-    request.user.todos.remove(pk)
-    todos = request.user.todos.all()
+    UserTodos.objects.get(pk=pk).delete()
+
+    reorder(request.user)
+    todos = UserTodos.objects.filter(user=request.user)
     return render(request, 'partials/todo-list.html', {'todos': todos})
 
 @login_required
@@ -71,9 +78,9 @@ def search_todo(request):
     results = ToDo.objects.filter(description__icontains=search_text)
 
     #ToDo: figure out why todos are saving as all users, once more user centric you can add this 
-    # user_todos = request.user.todos.all()
+    # user_todos = UserTodos.objects.filter(user=request.user)
     # results = ToDo.objects.filter(description__icontains=search_text).exclude(
-    #     description__in=user_todos.value_list('description', flat=True)
+    #     description__in=user_todos.value_list('todo__description', flat=True)
     # )
 
     context = {'results': results}
@@ -81,3 +88,14 @@ def search_todo(request):
 
 def clear(request):
     return HttpResponse("")
+
+def sort(request):
+    todos_pks_order = request.POST.getlist('todo_order')
+    todos = []
+    for idx, todo_pk in enumerate(todos_pks_order, start=1):
+        usertodo = UserTodos.objects.get(pk=todo_pk)
+        usertodo.order = idx
+        usertodo.save()
+        todos.append(usertodo)
+
+    return render(request, 'partials/todo-list.html', {'todos': todos})

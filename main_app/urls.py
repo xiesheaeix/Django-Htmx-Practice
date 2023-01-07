@@ -15,7 +15,8 @@ DjangoPractice_urlpatterns = [
     path('add-todo/', views.add_todo, name='add-todo'),
     path('delete-todo/<int:pk>/', views.delete_todo, name='delete-todo'),
     path('search-todo', views.search_todo, name='search-todo'),
-    path('clear/', views.clear, name='clear')
+    path('clear/', views.clear, name='clear'),
+    path('sort/', views.sort, name='sort'),
 ]
 
 urlpatterns += DjangoPractice_urlpatterns
