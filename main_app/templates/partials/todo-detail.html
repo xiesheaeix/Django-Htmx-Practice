@@ -8,7 +8,9 @@
     
         <button class="btn btn-primary" 
         hx-get="{% url 'todo-list-partial' %}" 
-        hx-target="#todo-list">Your List</button>
+        hx-target="#todo-list"
+        hx-push-url="/todos">Your List
+        </button>
     </div>
 
     <div>

@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.conf import settings
 
 from main_app.models import ToDo, UserTodos
 from main_app.utils import get_max_order, reorder
@@ -30,11 +32,17 @@ class SignupView(FormView):
 
 class TodoList(LoginRequiredMixin, ListView):
     template_name = 'todos.html'
-    model = ToDo
+    model = UserTodos
+    paginate_by = settings.PAGINATE_BY
     context_object_name = 'todos'
 
+    def get_template_names(self):
+        if self.request.htmx:
+            return 'partials/todo-list-elements.html'
+        return 'todos.html'
+
     def get_queryset(self):
-      return UserTodos.objects.filter(user=self.request.user)
+      return UserTodos.objects.prefetch_related('todo').filter(user=self.request.user)
 
 
 def check_username(request):
@@ -91,13 +99,21 @@ def clear(request):
 def sort(request):
     todos_pks_order = request.POST.getlist('todo_order')
     todos = []
+
+    usertodos = UserTodos.objects.prefetch_related('todo').filter(user=request.user)
     for idx, todo_pk in enumerate(todos_pks_order, start=1):
-        usertodo = UserTodos.objects.get(pk=todo_pk)
+        usertodo = next(u for u in usertodos if u.pk == todo_pk)
         usertodo.order = idx
         usertodo.save()
         todos.append(usertodo)
 
-    return render(request, 'partials/todo-list.html', {'todos': todos})
+    paginator = Paginator(todos, settings.PAGINATE_BY)
+    page_number = len(todos_pks_order) / settings.PAGINATE_BY
+    page_obj = paginator.get_page(page_number)
+    context = {'todos': todos, 'page_obj': page_obj}
+
+
+    return render(request, 'partials/todo-list.html', context)
 
 @login_required
 def detail(request, pk):

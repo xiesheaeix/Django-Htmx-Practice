@@ -1,0 +1,24 @@
+{% for todo in todos %}
+
+{% if forloop.last and page_obj.has_next %}
+<div hx-get="{% url 'todo-list' %}?page={{  page_obj.number|add:1 }}" hx-trigger="revealed" hx-swapped="afterend" hx-target="this">
+{% else %}
+<div>
+{% endif %}
+
+    <input type="hidden" name="todo_order" value="{{ todo.pk }}"/>
+    <a hx-get="{% url 'detail' todo.pk %}" 
+        hx-target="#todo-list"
+        hx-push-url="/todos/{{ todo.todo.description }}">
+    <li class="list-group-item d-flex justify-content-between align-center">
+        #{{ todo.order }} {{ todo.todo.description }} 
+    </a>
+        <span class="badge text-bg-danger"
+        style="cursor: pointer;"
+        hx-delete="{% url 'delete-todo' todo.pk %}"
+        hx-target="#todo-list"
+        hx-confirm="Are you sure you want to delete?">X</span>
+    </li>
+</div>
+
+{% endfor %}
