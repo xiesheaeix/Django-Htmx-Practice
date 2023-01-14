@@ -3,8 +3,10 @@
 }
 
 body {
-    background: rgb(35,41,46);
-    background: linear-gradient(90deg, rgba(35,41,46,1) 10%, rgba(56,68,87,1) 40%, rgba(56,68,87,1) 60%, rgba(35,41,46,1) 90%);
+    background: rgb(238,174,202);
+    background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+    /* background: rgb(35,41,46);
+    background: linear-gradient(90deg, rgba(35,41,46,1) 10%, rgba(56,68,87,1) 40%, rgba(56,68,87,1) 60%, rgba(35,41,46,1) 90%); */
     animation: fade ease 2s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
@@ -24,4 +26,8 @@ body {
     color: red;
     font-size: 30px;
     transition: all ease-in 2s;
+}
+
+#homepage h1 {
+   color: blue;
 }
